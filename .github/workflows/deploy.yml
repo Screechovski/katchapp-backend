@@ -26,7 +26,7 @@ jobs:
       - name: Deploy via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
-            cd /app/katchapp-backend &&
+            cd ${{ secrets.SSH_PATH || app }} &&
             git pull origin main &&
             docker compose build &&
             go run main.go
