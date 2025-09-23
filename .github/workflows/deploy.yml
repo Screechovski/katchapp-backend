@@ -27,7 +27,12 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
             cd ${{ secrets.SSH_PATH }} &&
+            echo "🔄 Сбрасываем локальные изменения..." &&
+            git reset --hard HEAD &&
+            git clean -fd &&
+            echo "📥 Обновляем код из main..." &&
             git pull origin main &&
             chmod +x ./start.sh &&
+            echo "🚀 Запускаем start.sh..." &&
             ./start.sh
           '
