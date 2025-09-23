@@ -1,36 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
-    <h1 style="color:red">Админ панель для тренировок</h1>
-    <div id="root"></div>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+  </head>
+  <body>
+    <h1 x-data="{ message: 'I ❤️ Alpine' }" x-text="message"></h1>
 
-    <script>
-        const load = (successCallback) => {
-            fetch('/api/exercises')
-                .then(data => data.json())
-                .then(successCallback)
-                .catch(console.warn)
+    <div
+      class="root"
+      x-data="{
+        searchQuery: '',
+        posts: [],
+        get filteredPosts() {
+            if (!this.searchQuery.trim()) {
+                return this.posts;
+            }
+
+            return this.posts.filter(item =>
+                item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+            );
         }
+    }"
+      x-init="posts = await (await fetch('/api/exercises')).json()"
+    >
 
-        const renderItems = (items) => {
-            const tableInnerHtml = items.map(createNodeForItem).join('');
-            const res = `<table>${tableInnerHtml}</table>`;
+        <input
+        type="text"
+        x-model="searchQuery"
+        placeholder="Поиск по imageName..."
+        style="padding: 8px; width: 300px; height: 25px; margin-bottom: 20px"
+        />
 
-            document.getElementById('root').innerHTML = `<div style="max-height: calc(100vh - 100px); overflow: auto;"><table>${tableInnerHtml}</table></div>`;
-        }
-
-        const createNodeForItem = (item) => {
-            return `<tr><td>${item.id}</td><td>${item.name}</td><td>${item.imageName}</td><td><img height="80" weight="80" src="/image/exercise/${item.imageName}"></td></tr>`
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            load(renderItems);
-        })
-    </script>
-</body>
+        <div style="max-height: calc(100vh - 170px); overflow: auto">
+        <table>
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Название</th>
+                <th>Название картинки</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody :key="searchQuery">
+            <template x-for="item in filteredPosts">
+                <tr>
+                <td x-text="item.id"></td>
+                <td x-text="item.name"></td>
+                <td x-text="item.imageName"></td>
+                <td>
+                    <img
+                    height="80"
+                    width="80"
+                    :src="`/image/exercise/${item.imageName}`"
+                    />
+                </td>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+        </div>
+    </div>
+  </body>
 </html>
