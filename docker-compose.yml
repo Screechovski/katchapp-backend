@@ -3,25 +3,13 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      # These variables are used in main.go for database connection
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
-    depends_on:
-      - db
 
 volumes:
   db_data:

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const load = (successCallback) => {
+            fetch('/api/exercises')
+                .then(data => data.json())
+                .then(successCallback)
+                .catch(console.warn)
+        }
+
+        const renderItems = (items) => {
+            const tableInnerHtml = items.map(createNodeForItem).join('');
+            const res = `<table>${tableInnerHtml}</table>`;
+
+            document.getElementById('root').innerHTML = `<div style="max-height: calc(100vh - 100px); overflow: auto;"><table>${tableInnerHtml}</table></div>`;
+        }
+
+        const createNodeForItem = (item) => {
+            return `<tr><td>${item.id}</td><td>${item.name}</td><td>${item.imageName}</td><td><img height="80" weight="80" src="/image/exercise/${item.imageName}"></td></tr>`
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            load(renderItems);
+        })
+    </script>
+</body>
+</html>

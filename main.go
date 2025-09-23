@@ -1,39 +1,65 @@
 package main
 
 import (
-	"database/sql"
+	"encoding/json"
 	"fmt"
+	"katchapp-backend/db"
 	"log"
 	"net/http"
-	"os"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func main() {
-	user, userExists := os.LookupEnv("POSTGRES_USER")
-	password, passwordExists := os.LookupEnv("POSTGRES_PASSWORD")
-	dbName, dbNameExists := os.LookupEnv("POSTGRES_DB")
-
-	if !userExists || !passwordExists || !dbNameExists {
-		log.Fatal("no data for connect")
-	}
-
-	connStr := fmt.Sprintf("postgresql://%s:%s@db:5432/%s?sslmode=disable", user, password, dbName)
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
+	db.Connect()
+	db.Init()
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Successfully connected to PostgreSQL!")
+	// http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+	// 	if r.Method != http.MethodGet {
+	// 		w.WriteHeader(http.StatusMethodNotAllowed)
+	// 		return
+	// 	}
+
+	// 	w.Header().Set("Content-Type", "text/html")
+	// 	http.ServeFile(w, r, "client/index.html")
+	// })
+
+	// Serve client assets under /admin/* and index.html at /admin
+	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/admin" || r.URL.Path == "/admin/" {
+			http.ServeFile(w, r, "client/index.html")
+			return
+		}
+		http.NotFound(w, r)
+	})
+	http.Handle("/admin/",
+		http.StripPrefix("/admin/",
+			http.FileServer(http.Dir("client"))))
+
+	// Serve images under /image/* from images directory
+	http.Handle("/image/",
+		http.StripPrefix("/image/",
+			http.FileServer(http.Dir("images"))))
+
+	http.HandleFunc("/api/exercises", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		exercises, err := db.GetAllExercises()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(exercises)
+	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello from Go and PostgreSQL!")
+		fmt.Fprintf(w, "Hello from Go and PostgreSQL 123!")
 	})
 
 	fmt.Println("Server starting on port 8080...")

@@ -1,0 +1,47 @@
+# Binaries for the current project
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.out
+*.test
+*.prof
+
+# Compiled binaries for the current project (if built in the root)
+/bin/
+/build/
+
+# Dependency caches
+# Go module cache
+pkg/mod/cache/
+# Vendor directory (if used)
+vendor/
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+log/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.swp
+*.bak
+*.swo
+*~
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
+
+# Other common ignored files
+.env
+.terraform/
+tfplan*
+*.tfstate
+*.tfstate.backup
+
+# Testing artifacts
+test.out
+testdata/
