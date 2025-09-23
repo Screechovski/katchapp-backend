@@ -15,4 +15,4 @@ until docker compose exec -T db pg_isready -U "${DB_USER:-postgres}" -d "${DB_NA
 done
 
 echo "Database is ready. Starting app with go run main.go"
-go run main.go
+go run main.go &
