@@ -6,6 +6,9 @@ if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs -d '\n' -I {} sh -c 'echo {}' | xargs)
 fi
 
+echo "🛑 Останавливаем процесс на порту 8080, если есть..."
+lsof -ti:8080 | xargs kill -9 2>/dev/null || echo "Нет процессов на порту 8080"
+
 echo "Starting Postgres via docker compose..."
 docker compose up -d db
 

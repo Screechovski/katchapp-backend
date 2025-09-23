@@ -59,7 +59,7 @@ func main() {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello from Go and PostgreSQL END????")
+		fmt.Fprintf(w, "Hello from Go I DIDIT")
 	})
 
 	fmt.Println("Server starting on port 8080...")
