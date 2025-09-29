@@ -12,39 +12,11 @@ import (
 
 var db *sql.DB
 
-func Init() {
-	_, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			token TEXT UNIQUE NOT NULL
-		);
-	`)
-	if err != nil {
-		log.Fatal(fmt.Errorf("failed creating user table: %w", err))
-	}
-
-	InitExercises()
-
-	// Seed first user if none exists
-	var existingUsers int
-	err = db.QueryRow("SELECT COUNT(*) FROM users").Scan(&existingUsers)
-	if err != nil {
-		log.Fatal(fmt.Errorf("failed seelcting users: %w", err))
-	}
-
-	if existingUsers == 0 {
-		firstToken, ok := os.LookupEnv("FIRST_USER_TOKEN")
-		if !ok || firstToken == "" {
-			log.Fatal("FIRST_USER_TOKEN env is required to seed initial user")
-		}
-
-		// Insert initial user
-		_, err = db.Exec("INSERT INTO users (token) VALUES ($1)", firstToken)
-		if err != nil {
-			log.Fatal(fmt.Errorf("failed to insert initial user: %w", err))
-		}
-		fmt.Println("Seeded initial user")
-	}
+func initTables() {
+	initTrain()
+	initUser()
+	initExercises()
+	initSets()
 }
 
 func Connect() {
@@ -76,6 +48,9 @@ func Connect() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	initTables()
+
 	fmt.Println("Successfully connected to PostgreSQL!")
 }
 
@@ -86,6 +61,21 @@ func Close() error {
 	return nil
 }
 
-func GetDB() *sql.DB {
-	return db
+func insert(queryRowFunc func() *sql.Row) (int, error) {
+	var id int
+	tx, err := db.Begin()
+
+	if err != nil {
+		return id, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	err = queryRowFunc().Scan(&id)
+
+	if err != nil {
+		return id, fmt.Errorf("error on inserting: %w", err)
+	}
+
+	defer tx.Rollback()
+
+	return id, err
 }
