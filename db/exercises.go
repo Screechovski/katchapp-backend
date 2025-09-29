@@ -11,12 +11,12 @@ type Exercise struct {
 	ImageName string `json:"imageName"`
 }
 
-func InitExercises() {
+func initExercises() {
 	_, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS exercises (
             id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            image TEXT NOT NULL
+            name VARCHAR(100) NOT NULL,
+            image VARCHAR(255)
         );
     `)
 	if err != nil {
@@ -517,7 +517,7 @@ func InitExercises() {
 			}
 		}
 		query += ";"
-		_, err := GetDB().Exec(query)
+		_, err := db.Exec(query)
 		if err != nil {
 			log.Println("failed to insert exercise:", err)
 		}
@@ -527,7 +527,7 @@ func InitExercises() {
 func GetAllExercises() ([]Exercise, error) {
 	list := make([]Exercise, 0)
 
-	rows, err := GetDB().Query("SELECT * FROM exercises ORDER BY id")
+	rows, err := db.Query("SELECT * FROM exercises ORDER BY id")
 	if err != nil {
 		log.Println("failed to query exercises:", err)
 		return list, err
