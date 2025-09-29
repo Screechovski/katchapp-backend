@@ -80,6 +80,16 @@ func main() {
 		),
 	)
 
+	// Hello World endpoint
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, "Hello World")
+	})
+
 	fmt.Println("Server starting on port 8080...")
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 }
