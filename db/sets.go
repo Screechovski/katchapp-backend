@@ -32,7 +32,7 @@ func initSets() {
 	`)
 
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed creating trains table: %w", err))
+		log.Fatal(fmt.Errorf("failed creating sets table: %w", err))
 	}
 }
 

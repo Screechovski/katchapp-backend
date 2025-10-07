@@ -10,7 +10,7 @@
     ></script>
   </head>
   <body>
-    <h1 x-data="{ message: 'I ❤️ Alpine' }" x-text="message"></h1>
+    <h1 x-data="{ message: 'I ❤️ Лизочку' }" x-text="message"></h1>
 
     <div
       class="root"
@@ -29,42 +29,41 @@
     }"
       x-init="posts = await (await fetch('/api/exercises')).json()"
     >
-
-        <input
+      <input
         type="text"
         x-model="searchQuery"
         placeholder="Поиск по imageName..."
         style="padding: 8px; width: 300px; height: 25px; margin-bottom: 20px"
-        />
+      />
 
-        <div style="max-height: calc(100vh - 170px); overflow: auto">
+      <div style="max-height: calc(100vh - 170px); overflow: auto">
         <table>
-            <thead>
+          <thead>
             <tr>
-                <th>Id</th>
-                <th>Название</th>
-                <th>Название картинки</th>
-                <th></th>
+              <th>Id</th>
+              <th>Название</th>
+              <th>Название картинки</th>
+              <th></th>
             </tr>
-            </thead>
-            <tbody :key="searchQuery">
+          </thead>
+          <tbody :key="searchQuery">
             <template x-for="item in filteredPosts">
-                <tr>
+              <tr>
                 <td x-text="item.id"></td>
                 <td x-text="item.name"></td>
                 <td x-text="item.imageName"></td>
                 <td>
-                    <img
+                  <img
                     height="80"
                     width="80"
                     :src="`/image/exercise/${item.imageName}`"
-                    />
+                  />
                 </td>
-                </tr>
+              </tr>
             </template>
-            </tbody>
+          </tbody>
         </table>
-        </div>
+      </div>
     </div>
   </body>
 </html>
