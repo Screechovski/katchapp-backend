@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"katchapp-backend/db"
 	"katchapp-backend/handlers"
+	"katchapp-backend/helper"
 	"katchapp-backend/middleware"
 	"log"
 	"net/http"
@@ -15,14 +16,14 @@ func main() {
 	db.Connect()
 	defer db.Close()
 
-	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/admin" || r.URL.Path == "/admin/" {
-			http.ServeFile(w, r, "client/index.html")
-			return
-		}
+	// http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+	// 	if r.URL.Path == "/admin" || r.URL.Path == "/admin/" {
+	// 		http.ServeFile(w, r, "client/index.html")
+	// 		return
+	// 	}
 
-		http.NotFound(w, r)
-	})
+	// 	http.NotFound(w, r)
+	// })
 
 	http.Handle(
 		"/admin/",
@@ -81,14 +82,23 @@ func main() {
 	)
 
 	// Hello World endpoint
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprint(w, "Hello World")
-	})
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	if r.Method != http.MethodGet {
+	// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	// 		return
+	// 	}
+	// 	w.Header().Set("Content-Type", "text/plain")
+	// 	fmt.Fprint(w, "Hello World")
+	// })
+
+	if !helper.IsDev() {
+		http.Handle(
+			"/",
+			http.FileServer(
+				http.Dir("../katch-app"),
+			),
+		)
+	}
 
 	fmt.Println("Server starting on port 8080...")
 	log.Fatal(http.ListenAndServe("localhost:8080", nil))

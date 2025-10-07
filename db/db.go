@@ -13,8 +13,8 @@ import (
 var db *sql.DB
 
 func initTables() {
-	initTrain()
 	initUser()
+	initTrain()
 	initExercises()
 	initSets()
 }
