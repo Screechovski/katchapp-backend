@@ -1,26 +1,30 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var db *sql.DB
+var db *gorm.DB
 
 func initTables() {
 	initUser()
 	initTrain()
+	initMuscleGroup()
+	initExerciseSecondaryMuscles()
 	initExercises()
 	initSets()
 }
 
 func Connect() {
-	if err := godotenv.Load(); err != nil {
+	err := godotenv.Load()
+
+	if err != nil {
 		log.Print("No .env file found")
 	}
 
@@ -31,51 +35,25 @@ func Connect() {
 	port, portExists := os.LookupEnv("DB_PORT")
 
 	if !userExists || !passwordExists || !dbNameExists || !hostExists || !portExists {
-		log.Fatal("no data for connect, user: ", user, " password: ", password, " dbName: ", dbName)
-	}
-	portInt, err := strconv.Atoi(port)
-	if err != nil {
-		log.Fatal("failed to convert port to int: ", err)
-	}
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, portInt, user, password, dbName)
-	db, err = sql.Open("postgres", psqlInfo)
-	if err != nil {
-		log.Fatal(err)
+		log.Fatal("no data for connect to DB")
 	}
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
+	dsn := fmt.Sprintf(
+		"user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
+		user,
+		password,
+		dbName,
+		host,
+		port,
+	)
 
-	initTables()
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		log.Panicf("Failed to connect to database: %v", err)
+	}
 
 	fmt.Println("Successfully connected to PostgreSQL!")
-}
 
-func Close() error {
-	if db != nil {
-		return db.Close()
-	}
-	return nil
-}
-
-func insert(queryRowFunc func() *sql.Row) (int, error) {
-	var id int
-	tx, err := db.Begin()
-
-	if err != nil {
-		return id, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	err = queryRowFunc().Scan(&id)
-
-	if err != nil {
-		return id, fmt.Errorf("error on inserting: %w", err)
-	}
-
-	defer tx.Rollback()
-
-	return id, err
+	initTables()
 }

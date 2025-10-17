@@ -10,11 +10,10 @@ import (
 
 func TrainGet(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserId(r)
-
-	trains, err := db.GetTrainsByUser(userID)
+	trains, err := db.GetTrainsByUserId(userID)
 
 	if err != nil {
-		fmt.Println("1 error TrainGet")
+		fmt.Println("1 error TrainGet", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

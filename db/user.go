@@ -1,55 +1,58 @@
 package db
 
 import (
-	"fmt"
 	"log"
 	"os"
+
+	"gorm.io/gorm"
 )
 
 type User struct {
-	ID    int
-	Token string
+	gorm.Model
+	Name   string
+	Token  string `gorm:"unique"`
+	Role   string
+	Trains []Train
 }
 
 func initUser() {
-	_, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			token TEXT UNIQUE NOT NULL
-		);
-	`)
+	err := db.AutoMigrate(&User{})
 
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed creating user table: %w", err))
+		panic("failed to migrate train table")
 	}
 
-	var existingUsers int
-	err = db.QueryRow("SELECT COUNT(*) FROM users").Scan(&existingUsers)
+	firstToken, ok := os.LookupEnv("FIRST_USER_TOKEN")
+
+	if !ok || firstToken == "" {
+		log.Fatal("FIRST_USER_TOKEN env is required to seed initial user")
+	}
+
+	_, err = GetUser(firstToken)
+
+	if err == nil {
+		return
+	}
+
+	err = CreateUser("admin", firstToken, "admin")
 
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed seelcting users: %w", err))
-	}
-
-	if existingUsers == 0 {
-		firstToken, ok := os.LookupEnv("FIRST_USER_TOKEN")
-
-		if !ok || firstToken == "" {
-			log.Fatal("FIRST_USER_TOKEN env is required to seed initial user")
-		}
-
-		// Insert initial user
-		_, err = db.Exec("INSERT INTO users (token) VALUES ($1)", firstToken)
-
-		if err != nil {
-			log.Fatal(fmt.Errorf("failed to insert initial user: %w", err))
-		}
-
-		fmt.Println("Seeded initial user")
+		log.Panic("failed creating first user", err.Error())
 	}
 }
 
 func GetUser(token string) (User, error) {
 	var user User
-	err := db.QueryRow("SELECT id, token FROM users WHERE token = $1", token).Scan(&user.ID, &user.Token)
-	return user, err
+
+	result := db.Where("token = ?", token).First(&user)
+
+	return user, result.Error
+}
+
+func CreateUser(name, token, role string) error {
+	newUser := User{Name: name, Token: token, Role: role}
+
+	result := db.Create(&newUser)
+
+	return result.Error
 }
