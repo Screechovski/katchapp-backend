@@ -38,6 +38,6 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func GetUserId(r *http.Request) int {
-	return r.Context().Value(authUserId).(int)
+func GetUserId(r *http.Request) uint {
+	return r.Context().Value(authUserId).(uint)
 }

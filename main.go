@@ -8,22 +8,19 @@ import (
 	"katchapp-backend/middleware"
 	"log"
 	"net/http"
-
-	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func main() {
 	db.Connect()
-	defer db.Close()
 
-	// http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
-	// 	if r.URL.Path == "/admin" || r.URL.Path == "/admin/" {
-	// 		http.ServeFile(w, r, "client/index.html")
-	// 		return
-	// 	}
+	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/admin" || r.URL.Path == "/admin/" {
+			http.ServeFile(w, r, "client/index.html")
+			return
+		}
 
-	// 	http.NotFound(w, r)
-	// })
+		http.NotFound(w, r)
+	})
 
 	http.Handle(
 		"/admin/",
@@ -62,8 +59,9 @@ func main() {
 			middleware.Auth(
 				middleware.Method(
 					middleware.MethodConfig{
-						Post: handlers.TrainPost,
-						Get:  handlers.TrainGet,
+						Post:   handlers.TrainPost,
+						Get:    handlers.TrainGet,
+						Delete: handlers.TrainDelete,
 					},
 				),
 			),
@@ -81,15 +79,18 @@ func main() {
 		),
 	)
 
-	// Hello World endpoint
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	if r.Method != http.MethodGet {
-	// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	// 		return
-	// 	}
-	// 	w.Header().Set("Content-Type", "text/plain")
-	// 	fmt.Fprint(w, "Hello World")
-	// })
+	// http.HandleFunc(
+	// 	"/api/create-user",
+	// 	middleware.Cors(
+	// 		middleware.Auth(
+	// 			middleware.Method(
+	// 				middleware.MethodConfig{
+	// 					Post: handlers.CreateUserPost,
+	// 				},
+	// 			),
+	// 		),
+	// 	),
+	// )
 
 	if !helper.IsDev() {
 		http.Handle(
