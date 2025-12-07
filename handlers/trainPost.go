@@ -14,10 +14,14 @@ type UserTrain struct {
 }
 
 func TrainPost(w http.ResponseWriter, r *http.Request) {
-	userID := middleware.GetUserId(r)
+	userID, err := middleware.GetUserId(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	var data UserTrain
-	err := json.NewDecoder(r.Body).Decode(&data)
+	err = json.NewDecoder(r.Body).Decode(&data)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

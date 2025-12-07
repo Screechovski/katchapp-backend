@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -13,8 +12,6 @@ type MethodConfig struct {
 
 func Method(config MethodConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Method middleware:", r.Method)
-
 		switch r.Method {
 		case http.MethodOptions:
 			return

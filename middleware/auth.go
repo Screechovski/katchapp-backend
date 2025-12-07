@@ -27,7 +27,6 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 		user, err := db.GetUser(authToken)
 
 		if err != nil {
-			fmt.Println("Auth DB err", err)
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
@@ -38,6 +37,14 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func GetUserId(r *http.Request) uint {
-	return r.Context().Value(authUserId).(uint)
+func GetUserId(r *http.Request) (uint, error) {
+	value := r.Context().Value(authUserId)
+	if value == nil {
+		return 0, fmt.Errorf("user ID not found in context")
+	}
+	userId, ok := value.(uint)
+	if !ok {
+		return 0, fmt.Errorf("invalid user ID type")
+	}
+	return userId, nil
 }
