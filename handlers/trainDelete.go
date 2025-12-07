@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"katchapp-backend/db"
 	"katchapp-backend/middleware"
 	"net/http"
@@ -9,7 +8,11 @@ import (
 )
 
 func TrainDelete(w http.ResponseWriter, r *http.Request) {
-	userId := middleware.GetUserId(r)
+	userId, err := middleware.GetUserId(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
@@ -27,7 +30,6 @@ func TrainDelete(w http.ResponseWriter, r *http.Request) {
 	err = db.DeleteTrain(userId, uint(trainId))
 
 	if err != nil {
-		fmt.Println("1 error TrainGet", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

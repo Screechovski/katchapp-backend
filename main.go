@@ -79,19 +79,6 @@ func main() {
 		),
 	)
 
-	// http.HandleFunc(
-	// 	"/api/create-user",
-	// 	middleware.Cors(
-	// 		middleware.Auth(
-	// 			middleware.Method(
-	// 				middleware.MethodConfig{
-	// 					Post: handlers.CreateUserPost,
-	// 				},
-	// 			),
-	// 		),
-	// 	),
-	// )
-
 	if !helper.IsDev() {
 		http.Handle(
 			"/",
