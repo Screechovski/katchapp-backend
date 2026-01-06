@@ -54,6 +54,19 @@ func main() {
 	)
 
 	http.HandleFunc(
+		"/api/exercise/history/{exerciseId}",
+		middleware.Cors(
+			middleware.Auth(
+				middleware.Method(
+					middleware.MethodConfig{
+						Get: handlers.ExerciseGet,
+					},
+				),
+			),
+		),
+	)
+
+	http.HandleFunc(
 		"/api/train",
 		middleware.Cors(
 			middleware.Auth(

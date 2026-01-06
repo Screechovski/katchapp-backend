@@ -43,10 +43,8 @@ func initUser() {
 
 func GetUser(token string) (User, error) {
 	var user User
-
-	result := db.Where("token = ?", token).First(&user)
-
-	return user, result.Error
+	err := db.Where("token = ?", token).First(&user).Error
+	return user, err
 }
 
 func CreateUser(name, token, role string) error {
@@ -55,4 +53,31 @@ func CreateUser(name, token, role string) error {
 	result := db.Create(&newUser)
 
 	return result.Error
+}
+
+type ShortSets struct {
+	Reps       int     `json:"reps"`
+	Weight     float32 `json:"weight"`
+	TrainId    uint    `json:"trainId"`
+	ExerciseId uint    `json:"exerciseId"`
+	SetId      uint    `json:"id"`
+}
+
+func GetTopSets(userId, exerciseId int) ([]ShortSets, error) {
+	var sets []ShortSets
+
+	err := db.
+		Table("users u").
+		Joins("INNER JOIN trains t ON u.id = t.user_id").
+		Joins("INNER JOIN sets s ON s.train_id = t.id").
+		Where("u.id = ? AND s.exercise_id = ?", userId, exerciseId).
+		Select("s.reps, s.weight, s.train_id, s.exercise_id, s.id as set_id").
+		Order("s.created_at DESC").
+		Scan(&sets).Error
+
+	if sets == nil {
+		return []ShortSets{}, err
+	}
+
+	return sets, err
 }
