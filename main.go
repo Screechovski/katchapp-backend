@@ -43,11 +43,28 @@ func main() {
 	)
 
 	http.Handle(
+		"/api/muscle-groups",
+		middleware.Cors(
+			middleware.Auth(
+				middleware.Method(
+					middleware.MethodConfig{
+						Get: handlers.MuscleGroupsGet,
+					},
+				),
+			),
+		),
+	)
+
+	http.Handle(
 		"/api/exercises",
 		middleware.Cors(
 			middleware.Method(
 				middleware.MethodConfig{
 					Get: handlers.ExercisesGet,
+					Post: middleware.Role(
+						[]string{"admin"},
+						handlers.ExercisesPost,
+					),
 				},
 			),
 		),

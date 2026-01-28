@@ -12,13 +12,19 @@ import (
 
 var db *gorm.DB
 
-func initTables() {
-	initUser()
+func initTables() error {
+	if err := initUser(); err != nil {
+		return err
+	}
 	initTrain()
-	initMuscleGroup()
+	if err := initMuscleGroup(); err != nil {
+		return err
+	}
 	initExerciseSecondaryMuscles()
 	initExercises()
 	initSets()
+
+	return nil
 }
 
 func Connect() {
@@ -55,5 +61,7 @@ func Connect() {
 
 	fmt.Println("Successfully connected to PostgreSQL!")
 
-	initTables()
+	if err := initTables(); err != nil {
+		log.Panicf("Failed to connect to database: %v", err)
+	}
 }

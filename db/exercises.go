@@ -1178,6 +1178,36 @@ func getExercisesInitial() []Exercise {
 	}
 }
 
+type SubGroup struct {
+	Id    uint
+	Level int
+}
+
+func UpdateImage(id uint, imageName string) error {
+	result := db.Model(&Exercise{}).Where("id = ?", id).Update("ImageName", imageName)
+	return result.Error
+}
+
+func SaveExercise(name, imgPath string, group uint, subGroups []SubGroup) (uint, error) {
+	exercise := Exercise{
+		ImageName:        imgPath,
+		Name:             name,
+		MuscleGroupID:    group,
+		SecondaryMuscles: []ExerciseSecondaryMuscle{},
+	}
+
+	for _, sub := range subGroups {
+		exercise.SecondaryMuscles = append(exercise.SecondaryMuscles, ExerciseSecondaryMuscle{
+			MuscleGroupId:   sub.Id,
+			EngagementLevel: sub.Level,
+		})
+	}
+
+	result := db.Create(&exercise)
+
+	return exercise.ID, result.Error
+}
+
 func initExercises() {
 	err := db.AutoMigrate(&Exercise{})
 
