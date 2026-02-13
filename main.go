@@ -99,6 +99,18 @@ func main() {
 				http.Dir("../katch-app"),
 			),
 		)
+		http.Handle(
+			"/profile",
+			http.FileServer(
+				http.Dir("../katch-app"),
+			),
+		)
+		http.Handle(
+			"/history",
+			http.FileServer(
+				http.Dir("../katch-app"),
+			),
+		)
 	}
 
 	fmt.Println("Server starting on port 8080...")

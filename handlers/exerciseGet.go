@@ -116,10 +116,6 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 		trains = append(trains, *train)
 	}
 
-	sort.Slice(trains, func(i, j int) bool {
-		return trains[i].TrainDate < trains[j].TrainDate
-	})
-
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(trains); err != nil {
