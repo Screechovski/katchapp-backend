@@ -55,28 +55,28 @@ func CreateUser(name, token, role string) error {
 	return result.Error
 }
 
-type ShortSets struct {
+type ShortNewSets struct {
 	Reps       int     `json:"reps"`
 	Weight     float32 `json:"weight"`
 	TrainId    uint    `json:"trainId"`
 	ExerciseId uint    `json:"exerciseId"`
+	Date       string  `json:"date"`
 	SetId      uint    `json:"id"`
 }
 
-func GetTopSets(userId, exerciseId int) ([]ShortSets, error) {
-	var sets []ShortSets
+func GetSets(userId, exerciseId int) ([]ShortNewSets, error) {
+	var sets []ShortNewSets
 
 	err := db.
-		Table("users u").
-		Joins("INNER JOIN trains t ON u.id = t.user_id").
-		Joins("INNER JOIN sets s ON s.train_id = t.id").
-		Where("u.id = ? AND s.exercise_id = ?", userId, exerciseId).
-		Select("s.reps, s.weight, s.train_id, s.exercise_id, s.id as set_id").
-		Order("s.created_at DESC").
+		Table("sets").
+		Select("sets.id, trains.date, sets.reps, sets.weight, sets.train_id, sets.exercise_id").
+		Joins("INNER JOIN trains ON trains.id = sets.train_id").
+		Joins("INNER JOIN users ON users.id = trains.user_id").
+		Where("users.id = ? AND sets.exercise_id = ?", userId, exerciseId).
 		Scan(&sets).Error
 
 	if sets == nil {
-		return []ShortSets{}, err
+		return []ShortNewSets{}, err
 	}
 
 	return sets, err
