@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
+	"log"
 	"net/http"
 	"sort"
 )
@@ -11,7 +13,7 @@ func ExercisesGet(w http.ResponseWriter, r *http.Request) {
 	exercises, err := db.GetAllExercises()
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		helper.HandleError(w, err, http.StatusInternalServerError, "Failed to retrieve exercises")
 		return
 	}
 
@@ -44,8 +46,10 @@ func ExercisesGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(exercises); err != nil {
-		http.Error(w, "Error on response encode", http.StatusInternalServerError)
+		log.Printf("Error encoding response: %v", err)
+		return
 	}
 }

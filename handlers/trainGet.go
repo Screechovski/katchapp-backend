@@ -3,7 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
 	"katchapp-backend/middleware"
+	"log"
 	"net/http"
 )
 
@@ -16,15 +18,15 @@ func TrainGet(w http.ResponseWriter, r *http.Request) {
 	trains, err := db.GetTrainsByUserId(userID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helper.HandleError(w, err, http.StatusInternalServerError, "Failed to retrieve trains")
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(trains); err != nil {
-		http.Error(w, "Error on response encode", http.StatusInternalServerError)
+		log.Printf("Error encoding response: %v", err)
+		return
 	}
 }

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
 	"katchapp-backend/middleware"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -69,7 +71,7 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 
 	sets, err := db.GetSets(int(userID), exerciseId)
 	if err != nil {
-		http.Error(w, "getting sets error", http.StatusBadRequest)
+		helper.HandleError(w, err, http.StatusInternalServerError, "Failed to retrieve sets")
 		return
 	}
 
@@ -117,11 +119,10 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(trains); err != nil {
-		http.Error(w, "error encode response", http.StatusInternalServerError)
+		log.Printf("Error encoding response: %v", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

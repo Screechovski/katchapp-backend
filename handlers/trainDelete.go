@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
 	"katchapp-backend/middleware"
 	"net/http"
 	"strconv"
@@ -30,7 +31,9 @@ func TrainDelete(w http.ResponseWriter, r *http.Request) {
 	err = db.DeleteTrain(userId, uint(trainId))
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helper.HandleError(w, err, http.StatusInternalServerError, "Failed to delete train")
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
