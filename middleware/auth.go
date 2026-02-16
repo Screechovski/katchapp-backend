@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
+	"log"
 	"net/http"
 )
 
@@ -27,7 +29,13 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 		user, err := db.GetUser(authToken)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
+			if helper.IsDev() {
+				log.Printf("Auth error: %v", err)
+				http.Error(w, err.Error(), http.StatusForbidden)
+			} else {
+				log.Printf("Auth error: %v", err)
+				http.Error(w, "Invalid authorization token", http.StatusForbidden)
+			}
 			return
 		}
 

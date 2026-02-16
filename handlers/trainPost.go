@@ -3,7 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
 	"katchapp-backend/middleware"
+	"log"
 	"net/http"
 )
 
@@ -24,21 +26,21 @@ func TrainPost(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&data)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		helper.HandleError(w, err, http.StatusBadRequest, "Invalid request data")
 		return
 	}
 
 	createdTrainId, err := db.WriteTrain(data.Date, userID, data.Weight)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helper.HandleError(w, err, http.StatusInternalServerError, "Failed to create train")
 		return
 	}
 
 	createdSetsIds, err := db.WriteSets(data.Sets, createdTrainId)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helper.HandleError(w, err, http.StatusInternalServerError, "Failed to create sets")
 		return
 	}
 
@@ -46,6 +48,7 @@ func TrainPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	if err := json.NewEncoder(w).Encode(createdSetsIds); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Error encoding response: %v", err)
+		return
 	}
 }

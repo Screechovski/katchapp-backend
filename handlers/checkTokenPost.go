@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
+	"log"
 	"net/http"
 )
 
@@ -20,19 +21,19 @@ func CheckTokenPost(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&data)
 
 	if err != nil {
-		fmt.Println("error on read")
-		w.WriteHeader(http.StatusInternalServerError)
+		helper.HandleError(w, err, http.StatusBadRequest, "Invalid request data")
 		return
 	}
 
 	_, err = db.GetUser(data.Token)
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 
 	response := Response{IsValid: err == nil}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		fmt.Println("error on get user")
-		http.Error(w, "Error on response encode", http.StatusInternalServerError)
+		log.Printf("Error encoding response: %v", err)
+		return
 	}
 }
