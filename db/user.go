@@ -73,7 +73,7 @@ func GetSets(userId, exerciseId int) ([]ShortNewSets, error) {
 		Joins("INNER JOIN trains ON trains.id = sets.train_id").
 		Joins("INNER JOIN users ON users.id = trains.user_id").
 		Where("users.id = ? AND sets.exercise_id = ?", userId, exerciseId).
-		Order("trains.date DESC").
+		Order("sets.id DESC").
 		Scan(&sets).Error
 
 	if sets == nil {

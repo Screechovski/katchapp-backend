@@ -30,7 +30,6 @@ type TrainCombatApproaches struct {
 type TrainCombat struct {
 	TrainID    uint                    `json:"trainId"`
 	TrainDate  string                  `json:"trainDate"`
-	Rm         float32                 `json:"rm"`
 	Approaches []TrainCombatApproaches `json:"approaches"`
 }
 
@@ -109,7 +108,6 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 			trainMap[set.TrainId] = &TrainCombat{
 				TrainID:    set.TrainId,
 				TrainDate:  set.Date,
-				Rm:         rm,
 				Approaches: []TrainCombatApproaches{},
 			}
 		}
