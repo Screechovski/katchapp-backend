@@ -30,7 +30,14 @@ type TrainCombatApproaches struct {
 type TrainCombat struct {
 	TrainID    uint                    `json:"trainId"`
 	TrainDate  string                  `json:"trainDate"`
+	Rm         float32                 `json:"rm"`
 	Approaches []TrainCombatApproaches `json:"approaches"`
+}
+
+type Result struct {
+	ExerciseID int           `json:"exerciseId"`
+	Rm         float32       `json:"rm"`
+	Trains     []TrainCombat `json:"trains"`
 }
 
 func splitApproachKey(key string) (int, float32) {
@@ -55,6 +62,20 @@ func split(s string, sep byte) []string {
 	result = append(result, s[start:])
 	return result
 }
+func getRm(sets []db.ShortNewSets) float32 {
+	rms := []float32{}
+	for _, set := range sets {
+		rms = append(rms, set.Weight/(1.0278-(0.0278*float32(set.Reps))))
+	}
+	if len(rms) == 0 {
+		return 0
+	}
+	var sum float32
+	for _, v := range rms {
+		sum += v
+	}
+	return sum / float32(len(rms))
+}
 
 func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 	userID, err := middleware.GetUserId(r)
@@ -75,12 +96,20 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var rm float32
+	if len(sets) < 6 {
+		rm = 0
+	} else {
+		rm = getRm(sets[:min(6, len(sets))])
+	}
+
 	trainMap := make(map[uint]*TrainCombat)
 	for _, set := range sets {
 		if _, exists := trainMap[set.TrainId]; !exists {
 			trainMap[set.TrainId] = &TrainCombat{
 				TrainID:    set.TrainId,
 				TrainDate:  set.Date,
+				Rm:         rm,
 				Approaches: []TrainCombatApproaches{},
 			}
 		}
@@ -118,10 +147,16 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 		trains = append(trains, *train)
 	}
 
+	result := Result{
+		Trains:     trains,
+		ExerciseID: exerciseId,
+		Rm:         rm,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(trains); err != nil {
+	if err := json.NewEncoder(w).Encode(result); err != nil {
 		log.Printf("Error encoding response: %v", err)
 		return
 	}
