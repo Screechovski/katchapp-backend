@@ -145,6 +145,10 @@ func ExerciseGet(w http.ResponseWriter, r *http.Request) {
 		trains = append(trains, *train)
 	}
 
+	sort.Slice(trains, func(i, j int) bool {
+		return trains[i].TrainID > trains[j].TrainID
+	})
+
 	result := Result{
 		Trains:     trains,
 		ExerciseID: exerciseId,
