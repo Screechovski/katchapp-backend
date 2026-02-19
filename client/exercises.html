@@ -1,69 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
-  </head>
-  <body>
-    <h1 x-data="{ message: 'I ❤️ Лизочку' }" x-text="message"></h1>
 
-    <div
-      class="root"
-      x-data="{
-        searchQuery: '',
-        posts: [],
-        get filteredPosts() {
-            if (!this.searchQuery.trim()) {
-                return this.posts;
-            }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Упражнения</title>
+  <script src="validation.js"></script>
+  <script src="main.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 
-            return this.posts.filter(item =>
-                item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-            );
-        }
-    }"
-      x-init="posts = await (await fetch('/api/exercises')).json()"
-    >
-      <input
-        type="text"
-        x-model="searchQuery"
-        placeholder="Поиск по imageName..."
-        style="padding: 8px; width: 300px; height: 25px; margin-bottom: 20px"
-      />
+  <script>
+    const loadExercises = async () => {
+      const exercises = await (await fetch('/api/exercises')).json()
 
-      <div style="max-height: calc(100vh - 170px); overflow: auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Название</th>
-              <th>Название картинки</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody :key="searchQuery">
-            <template x-for="item in filteredPosts">
-              <tr>
-                <td x-text="item.id"></td>
-                <td x-text="item.name"></td>
-                <td x-text="item.imageName"></td>
-                <td>
-                  <img
-                    height="80"
-                    width="80"
-                    :src="`/image/exercise/${item.imageName}`"
-                  />
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
+      return exercises;
+    }
+
+    const createExerciseCard = ({ ID, name, imageName }) => {
+      return `
+        <tr>
+          <th scope="row">${ID}</th>
+          <td>${name}</td>
+          <td>
+            <img
+              height="80"
+              width="80"
+              src="/image/exercise/${imageName}"
+              />
+          </td>
+        </tr>
+        `
+    }
+
+    const prepareExerciseCard = async (renderElement) => {
+      try {
+        const exercises = await loadExercises();
+        exercises.forEach(exercise => {
+          renderElement?.insertAdjacentHTML('beforeend', createExerciseCard(exercise))
+        });
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      prepareExerciseCard(document.getElementById('main'));
+    })
+  </script>
+</head>
+
+<body>
+  <main>
+    <div class="container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">название</th>
+            <th scope="col">картинка</th>
+          </tr>
+        </thead>
+        <tbody id="main">
+
+        </tbody>
+      </table>
     </div>
-  </body>
+  </main>
+</body>
+
 </html>

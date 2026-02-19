@@ -45,3 +45,5 @@ tfplan*
 # Testing artifacts
 test.out
 testdata/
+
+images/exercise/*

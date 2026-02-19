@@ -15,10 +15,8 @@ type User struct {
 	Trains []Train
 }
 
-func initUser() {
-	err := db.AutoMigrate(&User{})
-
-	if err != nil {
+func initUser() error {
+	if err := db.AutoMigrate(&User{}); err != nil {
 		panic("failed to migrate train table")
 	}
 
@@ -28,17 +26,15 @@ func initUser() {
 		log.Fatal("FIRST_USER_TOKEN env is required to seed initial user")
 	}
 
-	_, err = GetUser(firstToken)
-
-	if err == nil {
-		return
+	if _, err := GetUser(firstToken); err == nil {
+		return nil
 	}
 
-	err = CreateUser("admin", firstToken, "admin")
-
-	if err != nil {
-		log.Panic("failed creating first user", err.Error())
+	if err := CreateUser("admin", firstToken, "admin"); err != nil {
+		return err
 	}
+
+	return nil
 }
 
 func GetUser(token string) (User, error) {
