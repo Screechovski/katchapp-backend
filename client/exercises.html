@@ -14,8 +14,6 @@
     const loadExercises = async () => {
       const exercises = await (await fetch('/api/exercises')).json()
 
-      console.log(exercises);
-
       return exercises;
     }
 
