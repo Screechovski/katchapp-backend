@@ -4,10 +4,12 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO поправить связь для MuscleGroup.Paths
 type MuscleGroup struct {
 	gorm.Model
 	Name      string
-	Exercises []Exercise `gorm:"foreignKey:MuscleGroupID"`
+	Paths     []MuscleGroupPath `gorm:"foreignKey:MuscleGroupID"`
+	Exercises []Exercise        `gorm:"foreignKey:MuscleGroupID"`
 }
 
 func initMuscleGroup() error {
