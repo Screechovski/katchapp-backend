@@ -11,6 +11,7 @@ type Exercise struct {
 	gorm.Model
 	Name             string `json:"name"`
 	ImageName        string `json:"imageName"`
+	Hidden           bool   `json:"hidden"`
 	MuscleGroupID    uint
 	MuscleGroup      MuscleGroup
 	SecondaryMuscles []ExerciseSecondaryMuscle `gorm:"foreignKey:ExerciseId"`
@@ -1192,6 +1193,7 @@ func SaveExercise(name, imgPath string, group uint, subGroups []SubGroup) (uint,
 	exercise := Exercise{
 		ImageName:        imgPath,
 		Name:             name,
+		Hidden:           false,
 		MuscleGroupID:    group,
 		SecondaryMuscles: []ExerciseSecondaryMuscle{},
 	}
@@ -1246,4 +1248,26 @@ func GetExerciseByID(id uint) (Exercise, error) {
 	result := db.Preload("SecondaryMuscles").First(&exercise, id)
 
 	return exercise, result.Error
+}
+
+func UpdateExerciseHidden(id uint, hidden bool) error {
+	result := db.Model(&Exercise{}).Where("id = ?", id).Update("hidden", hidden)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func DeleteExercise(id uint) error {
+	result := db.Where("id = ?", id).Delete(&Exercise{})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

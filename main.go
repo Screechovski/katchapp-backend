@@ -42,6 +42,23 @@ func main() {
 	)
 
 	http.HandleFunc(
+		"/exercises/{id}",
+		middleware.Cors(
+			middleware.Auth(
+				middleware.Role(
+					[]string{"admin"},
+					middleware.Method(
+						middleware.MethodConfig{
+							Put:    handlers.ExercisePut,
+							Delete: handlers.ExerciseDelete,
+						},
+					),
+				),
+			),
+		),
+	)
+
+	http.HandleFunc(
 		"/train",
 		middleware.Cors(
 			middleware.Auth(
@@ -73,7 +90,8 @@ func main() {
 			middleware.Auth(
 				middleware.Method(
 					middleware.MethodConfig{
-						Get: handlers.MuscleGroupsGet,
+						Get:  handlers.MuscleGroupsGet,
+						Post: handlers.MuscleGroupsPost,
 					},
 				),
 			),
@@ -105,5 +123,5 @@ func main() {
 	}
 
 	fmt.Println("Server starting on port 8080...")
-	log.Fatal(http.ListenAndServe("localhost:8080", nil))
+	log.Fatal(http.ListenAndServe("localhost:8088", nil))
 }

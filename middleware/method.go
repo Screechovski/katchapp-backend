@@ -7,6 +7,7 @@ import (
 type MethodConfig struct {
 	Get    http.HandlerFunc
 	Post   http.HandlerFunc
+	Put    http.HandlerFunc
 	Delete http.HandlerFunc
 }
 
@@ -17,6 +18,9 @@ func Method(config MethodConfig) http.HandlerFunc {
 			return
 		case http.MethodPost:
 			config.Post(w, r)
+			return
+		case http.MethodPut:
+			config.Put(w, r)
 			return
 		case http.MethodDelete:
 			config.Delete(w, r)
