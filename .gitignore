@@ -8,6 +8,8 @@
 *.out
 *.test
 *.prof
+*_review.md
+caddyfile
 
 # Compiled binaries for the current project (if built in the root)
 /bin/

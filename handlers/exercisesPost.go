@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"katchapp-backend/db"
+	"katchapp-backend/helper"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -47,7 +49,7 @@ func ExercisesPost(w http.ResponseWriter, r *http.Request) {
 
 	file, handler, err := r.FormFile("image")
 	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		helper.HandleError(w, err, http.StatusBadRequest, "Error retrieving the file")
 		return
 	}
 	defer file.Close()
@@ -91,7 +93,7 @@ func ExercisesPost(w http.ResponseWriter, r *http.Request) {
 	for _, sub := range subgroupInts {
 		subs = append(subs, db.SubGroup{
 			Id:    uint(sub),
-			Level: 1,
+			Level: 1, // TODO добавить отправку на клиенте
 		})
 	}
 
@@ -115,5 +117,10 @@ func ExercisesPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(map[string]uint{"id": id}); err != nil {
+		http.Error(w, "error encoding response", http.StatusInternalServerError)
+		return
+	}
 }

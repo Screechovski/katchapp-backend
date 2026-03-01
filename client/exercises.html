@@ -1,72 +1,111 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Упражнения</title>
+        <script src="validation.js"></script>
+        <script src="main.js"></script>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+            crossorigin="anonymous"
+        />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Упражнения</title>
-  <script src="validation.js"></script>
-  <script src="main.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <script>
+            const loadExercises = async () => {
+                const exercises = await (await fetch("/api/exercises")).json();
 
-  <script>
-    const loadExercises = async () => {
-      const exercises = await (await fetch('/api/exercises')).json()
+                return exercises;
+            };
 
-      return exercises;
-    }
+            const createExerciseCard = ({ ID, name, imageName, hidden }) => {
+                return `
+                <tr data-tr-id="${ID}">
+                  <th scope="row">${ID}</th>
+                  <td>${name}</td>
+                  <td>
+                    <img
+                      height="80"
+                      width="80"
+                      src="/image/exercise/${imageName}"
+                      />
+                  </td>
+                  <td>
+                    <button data-id="${ID}" data-action="${hidden ? "show" : "hide"}" class="btn btn-primary" type="button">${hidden ? "Показать" : "Скрыть"}</button>
+                    <button data-id="${ID}" data-action="remove" class="btn btn-danger" type="button">Удалить</button>
+                  </td>
+                </tr>
+                `;
+            };
 
-    const createExerciseCard = ({ ID, name, imageName }) => {
-      return `
-        <tr>
-          <th scope="row">${ID}</th>
-          <td>${name}</td>
-          <td>
-            <img
-              height="80"
-              width="80"
-              src="/image/exercise/${imageName}"
-              />
-          </td>
-        </tr>
-        `
-    }
+            const removeExercise = (id) => {
+                apiRequest("/api/exercises/" + id, {
+                    method: "delete",
+                    token: true,
+                }).onSuccess(() => {
+                  document.querySelector(`tr[data-tr-id="${id}"]`).remove();
+                }).run();
+            };
+            const toggleExercise = (id, action) => {
+                apiRequest("/api/exercises/" + id, {
+                    method: "put",
+                    token: true,
+                    body: JSON.stringify({ hidden: action === 'hide' })
+                }).onSuccess(() => {
+                  const $btn = document.querySelector(`button[data-action="${action}"][data-id="${id}"]`);
+                  if (!$btn) return
+                  $btn.setAttribute('data-action', action === 'hide' ? 'show' : 'hide');
+                  $btn.innerText = action === 'hide' ? 'Показать' : 'Скрыть'
+                }).run();
+            };
 
-    const prepareExerciseCard = async (renderElement) => {
-      try {
-        const exercises = await loadExercises();
-        exercises.forEach(exercise => {
-          renderElement?.insertAdjacentHTML('beforeend', createExerciseCard(exercise))
-        });
-      } catch (error) {
-        console.warn(error);
-      }
-    }
+            const prepareExerciseCard = async () => {
+                try {
+                    const exercises = await loadExercises();
+                    const $tbody = document.getElementById("tbody");
+                    exercises.forEach((exercise) => {
+                        $tbody.insertAdjacentHTML("beforeend", createExerciseCard(exercise));
+                    });
+                    $tbody.addEventListener("click", (e) => {
+                        const id = e.target.dataset.id;
+                        if (!id) return;
+                        const action = e.target.dataset.action;
+                        if (action === "remove") {
+                            removeExercise(id);
+                        } else if (action === "hide") {
+                            toggleExercise(id, 'hide');
+                        } else if (action==='show') {
+                          toggleExercise(id, 'show');
+                        }
+                    });
+                } catch (error) {
+                    console.warn(error);
+                }
+            };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      prepareExerciseCard(document.getElementById('main'));
-    })
-  </script>
-</head>
+            document.addEventListener("DOMContentLoaded", () => {
+                prepareExerciseCard();
+            });
+        </script>
+    </head>
 
-<body>
-  <main>
-    <div class="container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">название</th>
-            <th scope="col">картинка</th>
-          </tr>
-        </thead>
-        <tbody id="main">
-
-        </tbody>
-      </table>
-    </div>
-  </main>
-</body>
-
+    <body>
+        <main>
+            <div class="container pt-5">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">название</th>
+                            <th scope="col">картинка</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+        </main>
+    </body>
 </html>
