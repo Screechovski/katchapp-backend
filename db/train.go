@@ -65,6 +65,37 @@ func GetTrainsByUserId(userId uint) ([]Train, error) {
 	return trains, err
 }
 
+type TrainsPage struct {
+	Items []Train
+	Total int64
+}
+
+func GetTrainsByUserIdPaged(userId uint, page, pageSize int) (TrainsPage, error) {
+	var out TrainsPage
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 20
+	}
+
+	q := db.Model(&Train{}).Where("user_id = ?", userId)
+	if err := q.Count(&out.Total).Error; err != nil {
+		return out, err
+	}
+
+	offset := (page - 1) * pageSize
+	err := db.Where("user_id = ?", userId).
+		Order("date DESC").
+		Preload("Sets.Exercise.MuscleGroup").
+		Preload("Sets.Exercise.SecondaryMuscles.MuscleGroup").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&out.Items).Error
+
+	return out, err
+}
+
 func DeleteTrain(userId, trainId uint) error {
 	result := db.Where("id = ? AND user_id = ?", trainId, userId).Delete(&Train{})
 
