@@ -23,6 +23,7 @@ func initTables() error {
 	initExerciseSecondaryMuscles()
 	initExercises()
 	initSets()
+	initCollectedSets()
 
 	return nil
 }

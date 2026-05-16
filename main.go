@@ -64,9 +64,8 @@ func main() {
 			middleware.Auth(
 				middleware.Method(
 					middleware.MethodConfig{
-						Post:   handlers.TrainPost,
-						Get:    handlers.TrainGet,
-						Delete: handlers.TrainDelete,
+						Post: handlers.TrainPost,
+						Get:  handlers.TrainGet,
 					},
 				),
 			),
