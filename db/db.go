@@ -12,22 +12,6 @@ import (
 
 var db *gorm.DB
 
-func initTables() error {
-	if err := initUser(); err != nil {
-		return err
-	}
-	initTrain()
-	if err := initMuscleGroup(); err != nil {
-		return err
-	}
-	initExerciseSecondaryMuscles()
-	initExercises()
-	initSets()
-	initCollectedSets()
-
-	return nil
-}
-
 func Connect() {
 	err := godotenv.Load()
 
@@ -61,8 +45,4 @@ func Connect() {
 	}
 
 	fmt.Println("Successfully connected to PostgreSQL!")
-
-	if err := initTables(); err != nil {
-		log.Panicf("Failed to connect to database: %v", err)
-	}
 }

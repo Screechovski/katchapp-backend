@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"katchapp-backend/db"
 	"katchapp-backend/handlers"
-	"katchapp-backend/helper"
 	"katchapp-backend/middleware"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -97,30 +97,11 @@ func main() {
 		),
 	)
 
-	if helper.IsDev() {
-		http.Handle(
-			"/admin/",
-			http.StripPrefix(
-				"/admin/",
-				http.FileServer(
-					http.Dir("./client"),
-				),
-			),
-		)
+	addr := os.Getenv("ADDR")
+	if addr == "" {
+		addr = ":8088"
 	}
 
-	if helper.IsDev() {
-		http.Handle(
-			"/image/",
-			http.StripPrefix(
-				"/image/",
-				http.FileServer(
-					http.Dir("./images"),
-				),
-			),
-		)
-	}
-
-	fmt.Println("Server starting on port 8080...")
-	log.Fatal(http.ListenAndServe("localhost:8088", nil))
+	fmt.Printf("Server starting on %s...\n", addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
