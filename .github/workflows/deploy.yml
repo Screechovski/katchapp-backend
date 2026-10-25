@@ -19,7 +19,7 @@ jobs:
           cache: true
 
       - name: Build binary
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o katchapp-backend .
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o katchapp-backend.new .
 
       - name: Upload binary
         uses: appleboy/scp-action@v0.1.7
@@ -28,7 +28,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          source: katchapp-backend
+          source: katchapp-backend.new
           target: /root/app/api-go
           overwrite: true
 
@@ -41,7 +41,9 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
-            chmod +x /root/app/api-go/katchapp-backend
+            cd /root/app/api-go
+            mv -f katchapp-backend.new katchapp-backend
+            chmod +x katchapp-backend
             systemctl restart katchapi-go
             sleep 2
             curl -fsS http://127.0.0.1:8088/health
