@@ -1,38 +1,29 @@
-name: Deploy to Production
-
+name: Deploy api-go
 on:
   push:
-    branches:
-      - main  # триггер при пуше в main (включая мердж)
+    branches: [main]
+
+concurrency:
+  group: prod-api-go
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
+      - uses: appleboy/ssh-action@v1.2.0
         with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-          name: id_rsa  # имя файла ключа
-
-      - name: Adding host to known_hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy via SSH
-        run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
-            cd ${{ secrets.SSH_PATH }} &&
-            echo "🔄 Сбрасываем локальные изменения..." &&
-            git reset --hard HEAD &&
-            git clean -fd &&
-            echo "📥 Обновляем код из main..." &&
-            git pull origin main &&
-            chmod +x ./start.sh &&
-            echo "🚀 Запускаем start.sh..." &&
-            ./start.sh
-          '
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd /srv/katchapp/katchapp-backend
+            git pull --ff-only
+            cd /srv/katchapp/infra
+            docker compose up -d --build api-go
+            sleep 5
+            test "$(docker compose ps --format '{{.Health}}' api-go)" = "healthy"
+            docker image prune -f
+            docker builder prune -f
