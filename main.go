@@ -35,19 +35,6 @@ func main() {
 	)
 
 	http.HandleFunc(
-		"/exercise/history/{exerciseId}",
-		middleware.Cors(
-			middleware.Auth(
-				middleware.Method(
-					middleware.MethodConfig{
-						Get: handlers.ExerciseGet,
-					},
-				),
-			),
-		),
-	)
-
-	http.HandleFunc(
 		"/exercises/{id}",
 		middleware.Cors(
 			middleware.Auth(
@@ -59,20 +46,6 @@ func main() {
 							Delete: handlers.ExerciseDelete,
 						},
 					),
-				),
-			),
-		),
-	)
-
-	http.HandleFunc(
-		"/train",
-		middleware.Cors(
-			middleware.Auth(
-				middleware.Method(
-					middleware.MethodConfig{
-						Post: handlers.TrainPost,
-						Get:  handlers.TrainGet,
-					},
 				),
 			),
 		),
