@@ -19,9 +19,9 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
-            cd /srv/katchapp/katchapp-backend
+            cd /root/katchapp/katchapp-backend
             git pull --ff-only
-            cd /srv/katchapp/infra
+            cd /root/katchapp/infra
             docker compose up -d --build api-go
             sleep 5
             test "$(docker compose ps --format '{{.Health}}' api-go)" = "healthy"
